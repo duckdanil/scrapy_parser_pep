@@ -12,7 +12,8 @@ class PepSpider(scrapy.Spider):
         links = response.css(
             'section[id="numerical-index"]').css('a[href^="pep-"]')
         for link in links:
-            yield response.follow(link, callback=self.parse_pep)
+            pep_url = response.urljoin(link.attrib['href']) + '/'
+            yield response.follow(pep_url, callback=self.parse_pep)
 
     def parse_pep(self, response):
         number, name = (

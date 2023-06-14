@@ -1,5 +1,6 @@
 import csv
 from datetime import datetime as dt
+from collections import defaultdict
 
 from scrapy.exceptions import DropItem
 
@@ -8,15 +9,15 @@ from pep_parse.settings import BASE_DIR
 
 class PepParsePipeline:
     def __init__(self):
-        self.status = None
+        self.statuses = defaultdict(int)
 
     def open_spider(self, spider):
-        self.status = {}
+        self.statuses.clear()
 
     def process_item(self, item, spider):
         try:
             key = item['status']
-            self.status[key] = self.status.get(key, 0) + 1
+            self.statuses[key] += 1
         except DropItem:
             raise DropItem('Drop item')
         return item
@@ -30,6 +31,7 @@ class PepParsePipeline:
             writer.writerows(
                 (
                     ('Статус', 'Количество'),
-                    *self.status.items(),
-                    ('Total', sum(self.status.values()))
+                    *self.statuses.items(),
+                    ('Total', sum(self.statuses.values()))
                 ))
+        self.statuses.clear()
